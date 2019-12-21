@@ -11,6 +11,8 @@ module.exports = {
   rules: {
     'no-console': 'off',
     'indent': ['error', 2],
-    'quotes': ['error', 'single']
+    'linebreak-style': ['error', 'unix'],
+    'quotes': ['error', 'single'],
+    'semi': ['error', 'nerver']
   }
 }
