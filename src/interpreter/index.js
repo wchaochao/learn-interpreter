@@ -14,7 +14,7 @@ export default class Interpreter extends NodeVisitor {
 
   visit_Var (node) {
     let varName = node.value
-    if (this.GLOBAL_SCOPE.hasOwnProperty(varName)) {
+    if (Object.prototype.hasOwnProperty.call(this.GLOBAL_SCOPE, varName)) {
       return this.GLOBAL_SCOPE[varName]
     } else {
       throw new Error(`Variable ${varName} does not declare`)
@@ -56,9 +56,9 @@ export default class Interpreter extends NodeVisitor {
     node.statements.forEach(statement => this.visit(statement))
   }
 
-  visit_Type (node) {}
+  visit_Type () {}
 
-  visit_VarDecl (node) {}
+  visit_VarDecl () {}
 
   visit_Block (node) {
     node.declarations.forEach(declaration => this.visit(declaration))

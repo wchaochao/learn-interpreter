@@ -23,9 +23,9 @@ export default class Parser {
 
   number () {
     if (this.currentToken.type === TOKEN_TYPE.INTEGER_CONST) {
-      return new Token(this.eat(TOKEN_TYPE.INTEGER_CONST))
+      return new Num(this.eat(TOKEN_TYPE.INTEGER_CONST))
     } else {
-      return new Token(this.eat(TOKEN_TYPE.FLOAT_CONST))
+      return new Num(this.eat(TOKEN_TYPE.FLOAT_CONST))
     }
   }
 

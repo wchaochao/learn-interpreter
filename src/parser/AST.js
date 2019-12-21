@@ -50,7 +50,7 @@ export class BinOp extends AST {
 }
 
 export class NoOp extends AST {
-  constructor (token) {
+  constructor () {
     super()
   }
 
