@@ -1,0 +1,22 @@
+{
+  "name": "learn-interpreter",
+  "version": "1.0.0",
+  "description": "简单的解释器",
+  "main": "main.js",
+  "scripts": {
+    "build": "babel src -d dist --source-maps",
+    "clean": "rm -r dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "interpreter"
+  ],
+  "author": "wchaochao",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.7.7",
+    "@babel/node": "^7.7.7",
+    "@babel/preset-env": "^7.7.7"
+  }
+}
