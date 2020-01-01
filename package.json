@@ -4,9 +4,10 @@
   "description": "简单的解释器",
   "main": "main.js",
   "scripts": {
-    "build": "babel src -d dist --source-maps",
+    "build": "babel src -d dist -s",
     "clean": "rm -r dist",
     "lint": "eslint src",
+    "example": "webpack -d --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,6 +20,8 @@
     "@babel/core": "^7.7.7",
     "@babel/node": "^7.7.7",
     "@babel/preset-env": "^7.7.7",
-    "eslint": "^6.8.0"
+    "eslint": "^6.8.0",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
   }
 }
