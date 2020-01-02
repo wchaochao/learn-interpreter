@@ -1,1 +1,1 @@
-import * as example from './src/examples/symbol'
+import * as example from './src/examples/interpreter'

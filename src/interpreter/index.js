@@ -1,10 +1,12 @@
-import NodeVisitor from './NodeVisitor'
+import NodeVisitor from '../visitor/index'
 import { TOKEN_TYPE } from '../utils/constants'
+import Semantic from '../semantic'
 
 export default class Interpreter extends NodeVisitor {
   constructor (parser) {
     super()
     this.parser = parser
+    this.semantic = new Semantic()
     this.GLOBAL_SCOPE = {}
   }
 
@@ -14,11 +16,7 @@ export default class Interpreter extends NodeVisitor {
 
   visit_Var (node) {
     let varName = node.value
-    if (Object.prototype.hasOwnProperty.call(this.GLOBAL_SCOPE, varName)) {
-      return this.GLOBAL_SCOPE[varName]
-    } else {
-      throw new Error(`Variable ${varName} does not declare`)
-    }
+    return this.GLOBAL_SCOPE[varName]
   }
 
   visit_UnaryOp (node) {
@@ -71,6 +69,7 @@ export default class Interpreter extends NodeVisitor {
 
   interprete () {
     let tree = this.parser.parse()
+    this.semantic.visit(tree)
     return this.visit(tree)
   }
 }
