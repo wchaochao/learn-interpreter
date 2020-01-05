@@ -107,6 +107,18 @@ export class VarDecl extends AST {
   }
 }
 
+export class ProcedureDecl extends AST {
+  constructor (name, block) {
+    super()
+    this.name = name
+    this.block = block
+  }
+
+  get [Symbol.toStringTag] () {
+    return 'ProcedureDecl'
+  }
+}
+
 export class Block extends AST {
   constructor (declarations, compound) {
     super()

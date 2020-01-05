@@ -1,6 +1,18 @@
 import { isWhitespace, isComment, isAlpha, isAlnum, isInteger } from '../utils'
-import { TOKEN_TYPE, RESERVED_KEYWORDS, SINGLE_PUNCTUATOR_MAP } from '../utils/constants'
+import { TOKEN_TYPE, RESERVED_KEYWORDS, SINGLE_PUNCTUATOR_MAP } from './constants'
 import Token from './Token'
+
+function memorized (type, value) {
+  const key = `${type.toString()}_${value}`
+  if (memorized.cache[key]) {
+    return memorized.cache[key]
+  } else {
+    const token = new Token(type, value)
+    memorized.cache[key] = token
+    return token
+  }
+}
+memorized.cache = {}
 
 export default class Lexer {
   constructor (text) {
@@ -66,7 +78,7 @@ export default class Lexer {
   id () {
     let id = this.advanceWhen(isAlnum)
     let keyword = RESERVED_KEYWORDS[id]
-    return new Token(keyword || TOKEN_TYPE.ID, id)
+    return memorized(keyword || TOKEN_TYPE.ID, id)
   }
 
   number () {
@@ -75,15 +87,15 @@ export default class Lexer {
       this.advanceBy()
       result += '.' + this.advanceWhen(isInteger)
       let number = parseFloat(result)
-      return new Token(TOKEN_TYPE.FLOAT_CONST, number)
+      return memorized(TOKEN_TYPE.FLOAT_CONST, number)
     } else {
       let number = parseInt(result)
-      return new Token(TOKEN_TYPE.INTEGER_CONST, number)
+      return memorized(TOKEN_TYPE.INTEGER_CONST, number)
     }
   }
 
   integer () {
-    let result = this.pluar(isInteger) 
+    let result = this.pluar(isInteger)
     return parseInt(result)
   }
 
@@ -110,13 +122,13 @@ export default class Lexer {
 
       if (this.peekValid(':=')) {
         this.advanceBy(2)
-        return new Token(TOKEN_TYPE.ASSIGN, ':=')
+        return memorized(TOKEN_TYPE.ASSIGN, ':=')
       }
 
       let type = SINGLE_PUNCTUATOR_MAP[char]
       if (type) {
         this.advanceBy()
-        return new Token(type, char)
+        return memorized(type, char)
       }
 
       this.error()

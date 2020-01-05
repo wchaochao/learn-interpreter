@@ -1,5 +1,5 @@
 import NodeVisitor from '../visitor/index'
-import { TOKEN_TYPE } from '../utils/constants'
+import { TOKEN_TYPE } from '../lexer/constants'
 import Semantic from '../semantic'
 
 export default class Interpreter extends NodeVisitor {
@@ -57,6 +57,8 @@ export default class Interpreter extends NodeVisitor {
   visit_Type () {}
 
   visit_VarDecl () {}
+
+  visit_ProcedureDecl () {}
 
   visit_Block (node) {
     node.declarations.forEach(declaration => this.visit(declaration))

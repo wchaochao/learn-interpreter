@@ -1,5 +1,5 @@
-import { TOKEN_TYPE, include } from '../utils/constants'
-import { Num, Var, UnaryOp, BinOp, NoOp, Assign, Compound, Type, VarDecl, Block, Program } from './AST'
+import { TOKEN_TYPE, include } from '../lexer/constants'
+import { Num, Var, UnaryOp, BinOp, NoOp, Assign, Compound, Type, VarDecl, Block, Program, ProcedureDecl } from './AST'
 
 export default class Parser {
   constructor (lexer) {
@@ -38,11 +38,11 @@ export default class Parser {
     if (include(type, ['INTEGER_CONST', 'FLOAT_CONST'])) {
       return new Num(this.eat(type))
     }
-    
+
     if (type === TOKEN_TYPE.ID) {
       return this.variable()
     }
-    
+
     if (type === TOKEN_TYPE.LPAREN) {
       this.eat(TOKEN_TYPE.LPAREN)
       let node = this.expr()
@@ -138,6 +138,7 @@ export default class Parser {
 
   declarations () {
     let result = []
+
     if (this.currentToken.type === TOKEN_TYPE.VAR) {
       this.eat(this.currentToken.type)
       while (this.currentToken.type === TOKEN_TYPE.ID) {
@@ -145,6 +146,16 @@ export default class Parser {
         this.eat(TOKEN_TYPE.SEMI)
       }
     }
+
+    while (this.currentToken.type === TOKEN_TYPE.PROCEDURE) {
+      this.eat(this.currentToken.type)
+      const id = this.eat(TOKEN_TYPE.ID)
+      this.eat(TOKEN_TYPE.SEMI)
+      const block = this.block()
+      result = result.concat(new ProcedureDecl(id.value, block))
+      this.eat(TOKEN_TYPE.SEMI)
+    }
+
     return result
   }
 

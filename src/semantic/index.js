@@ -50,6 +50,8 @@ export default class Semantic extends NodeVisitor {
     this.symtab.define(varSymbol)
   }
 
+  visit_ProcedureDecl () {}
+
   visit_Block (node) {
     node.declarations.forEach(item => this.visit(item))
     this.visit(node.compound)

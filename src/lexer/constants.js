@@ -1,6 +1,7 @@
 export const RESERVED_KEYWORDS = {
   PROGRAM: Symbol('PROGRAM'),
   VAR: Symbol('VAR'),
+  PROCEDURE: Symbol('PROCEDURE'),
   INTEGER: Symbol('INTEGER'),
   REAL: Symbol('REAL'),
   BEGIN: Symbol('BEGIN'),

@@ -5,6 +5,34 @@ VAR
    a, b, c, x : INTEGER;
    y          : REAL;
 
+PROCEDURE P1;
+VAR
+  a, k: INTEGER;
+
+  PROCEDURE P2;
+  VAR
+    a: REAL;
+    k: INTEGER;
+
+  BEGIN {P2}
+    a := 66.6;
+    k := 777;
+  END;
+
+BEGIN {P1}
+  a := 555;
+  k := 444;
+END;
+
+PROCEDURE P2;
+VAR
+  a, k: REAL;
+
+BEGIN {P2}
+  a := 22.2;
+  k := 33.3;
+END;
+
 BEGIN {Part10}
    BEGIN
       number := 2;
