@@ -2,7 +2,7 @@ import SymbolTable from '../semantic/SymbolTable'
 import { VarSymbol } from '../semantic/Symbol'
 
 const symtab = new SymbolTable()
-const intType = symtab.lookup('INTEGER')
+const intType = symtab.insertBuiltinType('INTEGER')
 const x = new VarSymbol('x', intType)
-symtab.define(x)
+symtab.insertVar(x)
 console.log(symtab.toString())

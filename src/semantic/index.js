@@ -44,10 +44,10 @@ export default class Semantic extends NodeVisitor {
 
   visit_VarDecl (node) {
     const typeName = node.typeNode.value
-    const typeSymbol = this.symtab.lookup(typeName)
+    const typeSymbol = this.symtab.insertBuiltinType(typeName)
     const varName = node.varNode.value
     const varSymbol = new VarSymbol(varName, typeSymbol)
-    this.symtab.define(varSymbol)
+    this.symtab.insertVar(varSymbol)
   }
 
   visit_ProcedureDecl () {}
