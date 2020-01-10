@@ -5,6 +5,6 @@ export default class Token {
   }
 
   toString () {
-    return `Token(${this.type}, ${this.value})`
+    return `Token(${this.type.toString()}, ${this.value})`
   }
-} 
+}

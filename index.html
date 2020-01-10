@@ -8,5 +8,32 @@
 </head>
 
 <body>
+  <div class="container">
+    <div class="layout-left">
+      <h2 class="title">Pascal源代码</h2>
+      <div class="code-editor">
+        <textarea name="" id="code-area" ></textarea>
+      </div>
+    </div>
+
+    <div class="layout-right">
+      <ul class="operate-bar">
+        <li class="operate-bar-item">
+          <button class="operate-bar-button lexer">词法分析</button>
+        </li>
+        <li class="operate-bar-item">
+          <button class="operate-bar-button parser">语法分析</button>
+        </li>
+        <li class="operate-bar-item">
+          <button class="operate-bar-button semantic">语义分析</button>
+        </li>
+        <li class="operate-bar-item">
+          <button class="operate-bar-button interpreter">解释执行</button>
+        </li>
+      </ul>
+
+      <pre class="result">结果</pre>
+    </div>
+  </div>
 </body>
 </html>
