@@ -28,22 +28,22 @@ function main () {
 
   document.querySelector('.lexer').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.innerHTML = lexer(code)
+    dom.textContent = lexer(code)
   })
 
   document.querySelector('.parser').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.innerHTML = parser(code)
+    dom.textContent = parser(code)
   })
 
   document.querySelector('.semantic').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.innerHTML = semantic(code)
+    dom.textContent = semantic(code)
   })
 
   document.querySelector('.interpreter').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.innerHTML = interpreter(code)
+    dom.textContent = interpreter(code)
   })
 }
 

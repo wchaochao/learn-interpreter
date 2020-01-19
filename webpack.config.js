@@ -1,9 +1,10 @@
 const path = require('path')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 const isDev = process.env.NODE_ENV === 'development'
-const otherPlugins = isDev ? [new BundleAnalyzerPlugin()] : []
+const otherPlugins = isDev ? [new BundleAnalyzerPlugin({ openAnalyzer: false, analyzerMode: 'static' })] : []
 
 module.exports = {
   entry: './main.js',
@@ -30,6 +31,7 @@ module.exports = {
     ]
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: 'learn-webpack',
       filename: 'index.html',
@@ -37,6 +39,7 @@ module.exports = {
     }),
     ...otherPlugins
   ],
+  devtool: 'source-map',
   devServer: {
     contentBase: './dist',
     open: false

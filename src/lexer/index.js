@@ -44,7 +44,7 @@ export default class Lexer {
   }
 
   peekBy (n = 1) {
-    let pos = this.pos + n
+    const pos = this.pos + n
     if (pos > this.text.length - 1) {
       return null
     } else {
@@ -76,7 +76,7 @@ export default class Lexer {
   }
 
   id () {
-    let id = this.advanceWhen(isAlnum)
+    const id = this.advanceWhen(isAlnum).toUpperCase()
     let keyword = RESERVED_KEYWORDS[id]
     return memorized(keyword || TOKEN_TYPE.ID, id)
   }
@@ -135,5 +135,15 @@ export default class Lexer {
     }
 
     return new Token(TOKEN_TYPE.EOF, null)
+  }
+
+  output () {
+    let result = []
+    let token
+    do {
+      token = this.getNextToken()
+      result.push(token.toString())
+    } while (token.value !== null)
+    return result.join('\n')
   }
 }

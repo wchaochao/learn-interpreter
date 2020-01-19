@@ -25,3 +25,7 @@ export function isInteger (char) {
 export function getClassName (obj) {
   return Object.prototype.toString.call(obj).slice(8, -1)
 }
+
+export function repeatChar (char, length) {
+  return new Array(length).join(char)
+}

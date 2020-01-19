@@ -5,8 +5,7 @@ import Semantic from '../semantic/index'
 export default function semantic (text) {
   let lexer = new Lexer(text)
   let parser = new Parser(lexer)
-  let tree = parser.parse()
-  let semantic = new Semantic()
-  semantic.visit(tree)
-  return JSON.stringify(semantic.symtab.toString(), null, '|-')
+  let semantic = new Semantic(parser)
+  semantic.analyze()
+  return semantic.output.reverse().join('\n\n')
 }

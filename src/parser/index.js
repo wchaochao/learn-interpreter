@@ -1,5 +1,5 @@
 import { TOKEN_TYPE, include } from '../lexer/constants'
-import { Num, Var, UnaryOp, BinOp, NoOp, Assign, Compound, Type, VarDecl, Block, Program, ProcedureDecl } from './AST'
+import { Num, Var, UnaryOp, BinOp, NoOp, Assign, Compound, Type, VarDecl, Block, Program, ProcedureDecl, Param } from './AST'
 
 export default class Parser {
   constructor (lexer) {
@@ -136,23 +136,57 @@ export default class Parser {
     return varNodes.map(node => new VarDecl(node, typeNode))
   }
 
+  variableDeclarationList () {
+    let result = []
+    while (this.currentToken.type === TOKEN_TYPE.ID) {
+      result = result.concat(this.variableDeclaration())
+      this.eat(TOKEN_TYPE.SEMI)
+    }
+    return result
+  }
+
+  formalParam () {
+    let varNodes = [this.variable()]
+    while (this.currentToken.type === TOKEN_TYPE.COMMA) {
+      this.eat(this.currentToken.type)
+      varNodes.push(this.variable())
+    }
+    this.eat(TOKEN_TYPE.COLON)
+    let typeNode = this.type()
+    return varNodes.map(node => new Param(node, typeNode))
+  }
+
+  formalParamList () {
+    let result = this.formalParam()
+    while (this.currentToken.type === TOKEN_TYPE.SEMI) {
+      this.eat(this.currentToken.type)
+      result = result.concat(this.formalParam())
+    }
+    return result
+  }
+
   declarations () {
     let result = []
 
-    if (this.currentToken.type === TOKEN_TYPE.VAR) {
+    while (this.currentToken.type === TOKEN_TYPE.VAR) {
       this.eat(this.currentToken.type)
-      while (this.currentToken.type === TOKEN_TYPE.ID) {
-        result = result.concat(this.variableDeclaration())
-        this.eat(TOKEN_TYPE.SEMI)
-      }
+      result = result.concat(this.variableDeclarationList())
     }
 
     while (this.currentToken.type === TOKEN_TYPE.PROCEDURE) {
       this.eat(this.currentToken.type)
       const id = this.eat(TOKEN_TYPE.ID)
+
+      let params = null
+      if (this.currentToken.type === TOKEN_TYPE.LPAREN) {
+        this.eat(this.currentToken.type)
+        params = this.formalParamList()
+        this.eat(TOKEN_TYPE.RPAREN)
+      }
+
       this.eat(TOKEN_TYPE.SEMI)
       const block = this.block()
-      result = result.concat(new ProcedureDecl(id.value, block))
+      result = result.concat(new ProcedureDecl(id.value, params, block))
       this.eat(TOKEN_TYPE.SEMI)
     }
 

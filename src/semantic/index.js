@@ -1,11 +1,13 @@
 import NodeVisitor from '../visitor'
-import SymbolTable from './SymbolTable'
-import { VarSymbol } from './Symbol'
+import { VarSymbol, ProcedureSymbol } from './Symbol'
+import ScopedSymbolTable from './ScopedSymbolTable'
 
 export default class Semantic extends NodeVisitor {
-  constructor () {
+  constructor (parser) {
     super()
-    this.symtab = new SymbolTable()
+    this.parser = parser
+    this.currentScope = null
+    this.output = []
   }
 
   error (name) {
@@ -16,7 +18,7 @@ export default class Semantic extends NodeVisitor {
 
   visit_Var (node) {
     const name = node.value
-    const symbol = this.symtab.lookup(name)
+    const symbol = this.currentScope.lookup(name)
     if (!symbol) {
       this.error(name)
     }
@@ -34,23 +36,44 @@ export default class Semantic extends NodeVisitor {
   visit_NoOp (node) {}
 
   visit_Assign (node) {
-    this.visit(node.left)
     this.visit(node.right)
+    this.visit(node.left)
   }
 
   visit_Compound (node) {
     node.statements.forEach(statement => this.visit(statement))
   }
 
-  visit_VarDecl (node) {
-    const typeName = node.typeNode.value
-    const typeSymbol = this.symtab.insertBuiltinType(typeName)
-    const varName = node.varNode.value
-    const varSymbol = new VarSymbol(varName, typeSymbol)
-    this.symtab.insertVar(varSymbol)
+  genVarSymbol (node) {
+    return new VarSymbol(node.varNode.value, this.currentScope.lookup(node.typeNode.value))
   }
 
-  visit_ProcedureDecl () {}
+  visit_VarDecl (node) {
+    const varSymbol = this.genVarSymbol(node)
+    this.currentScope.insertVar(varSymbol)
+  }
+
+  visit_ProcedureDecl (node) {
+    const procName = node.name
+    const procSymbol = new ProcedureSymbol(procName)
+    this.currentScope.insertVar(procSymbol)
+
+    const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, procName, this.currentScope)
+    this.currentScope = procedureScope
+
+    if (node.params) {
+      procSymbol.params = []
+      node.params.forEach(param => {
+        const symbol = this.genVarSymbol(param)
+        this.currentScope.insertVar(symbol)
+        procSymbol.params.push(symbol)
+      })
+    }
+
+    this.visit(node.block)
+    this.output.push(procedureScope.toString())
+    this.currentScope = this.currentScope.enclosingScope
+  }
 
   visit_Block (node) {
     node.declarations.forEach(item => this.visit(item))
@@ -58,6 +81,17 @@ export default class Semantic extends NodeVisitor {
   }
 
   visit_Program (node) {
+    const globalScope = new ScopedSymbolTable(1, 'global', this.currentScope)
+    globalScope.initBuiltinType()
+    this.currentScope = globalScope
+
     this.visit(node.block)
+    this.output.push(globalScope.toString())
+    this.currentScope = this.currentScope.enclosingScope
+  }
+
+  analyze () {
+    let tree = this.parser.parse()
+    this.visit(tree)
   }
 }

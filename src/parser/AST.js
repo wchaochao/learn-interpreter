@@ -107,10 +107,23 @@ export class VarDecl extends AST {
   }
 }
 
+export class Param extends AST {
+  constructor (varNode, typeNode) {
+    super()
+    this.varNode = varNode
+    this.typeNode = typeNode
+  }
+
+  get [Symbol.toStringTag] () {
+    return 'Param'
+  }
+}
+
 export class ProcedureDecl extends AST {
-  constructor (name, block) {
+  constructor (name, params = null, block) {
     super()
     this.name = name
+    this.params = params
     this.block = block
   }
 

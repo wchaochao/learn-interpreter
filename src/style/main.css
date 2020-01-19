@@ -69,6 +69,7 @@ html, body {
 .result {
   overflow: auto;
   line-height: 22px;
+  padding: 5px 10px;
 }
 
 .CodeMirror-code,
