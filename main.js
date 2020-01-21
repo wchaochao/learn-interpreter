@@ -6,6 +6,7 @@ import 'codemirror/mode/pascal/pascal'
 import lexer from './src/examples/lexer'
 import parser from './src/examples/parser'
 import semantic from './src/examples/semantic'
+import compiler from './src/examples/compiler'
 import interpreter from './src/examples/interpreter'
 import text from './src/examples/text'
 
@@ -39,6 +40,11 @@ function main () {
   document.querySelector('.semantic').addEventListener('click', () => {
     const code = editor.getValue()
     dom.textContent = semantic(code)
+  })
+
+  document.querySelector('.compiler').addEventListener('click', () => {
+    const code = editor.getValue()
+    dom.textContent = compiler(code)
   })
 
   document.querySelector('.interpreter').addEventListener('click', () => {

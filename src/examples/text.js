@@ -25,9 +25,15 @@ program Main;
       var c : real;
    begin { AlphaB }
       c := a + b;
+      y := -a + 1.2;
+      z := 1;
    end;  { AlphaB }
 
 begin { Main }
+  x := 1.2;
+  begin
+    y := 2.3;
+  end;
 end.  { Main }
 `
 
