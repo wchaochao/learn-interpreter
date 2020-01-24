@@ -1,18 +1,15 @@
 {
   "name": "learn-interpreter",
   "version": "1.0.0",
-  "description": "简单的解释器",
+  "description": "Pascal解释器",
   "main": "main.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV='development' webpack-dev-server",
-    "prod": "webpack -p",
-    "build": "babel src -d dist -s",
-    "clean": "rm -r dist",
-    "lint": "eslint src",
-    "example": "webpack -d --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack-dev-server --config ./build/webpack.dev.conf.js",
+    "build": "webpack --config ./build/webpack.prod.conf.js",
+    "lint": "eslint src"
   },
   "keywords": [
+    "pascal",
     "interpreter"
   ],
   "author": "wchaochao",
@@ -28,11 +25,14 @@
     "css-loader": "^3.4.1",
     "eslint": "^6.8.0",
     "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.9.0",
     "style-loader": "^1.1.2",
     "webpack": "^4.41.5",
     "webpack-bundle-analyzer": "^3.6.0",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.10.1"
+    "webpack-dev-server": "^3.10.1",
+    "webpack-manifest-plugin": "^2.2.0",
+    "webpack-merge": "^4.2.2"
   },
   "dependencies": {
     "codemirror": "^5.50.2"

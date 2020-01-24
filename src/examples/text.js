@@ -1,5 +1,4 @@
-const text = `
-program Main;
+const text = `program Main;
    var b, x, y : real;
    var z : integer;
 
