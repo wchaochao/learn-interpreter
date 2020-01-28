@@ -1,5 +1,6 @@
 import { TOKEN_TYPE, include } from '../lexer/constants'
 import { Num, Var, UnaryOp, BinOp, NoOp, Assign, Compound, Type, VarDecl, Block, Program, ProcedureDecl, Param } from './AST'
+import { ParserError, ERROR_CODE } from '../error'
 
 export default class Parser {
   constructor (lexer) {
@@ -8,7 +9,7 @@ export default class Parser {
   }
 
   error () {
-    throw new Error('Invalid Syntax')
+    throw new ParserError(`${ERROR_CODE.UNEXPECTED_TOKEN} -> ${this.currentToken.toString()}`)
   }
 
   eat (type) {
@@ -165,6 +166,24 @@ export default class Parser {
     return result
   }
 
+  procedureDeclaration () {
+    this.eat(TOKEN_TYPE.PROCEDURE)
+    const id = this.eat(TOKEN_TYPE.ID)
+
+    let params = null
+    if (this.currentToken.type === TOKEN_TYPE.LPAREN) {
+      this.eat(this.currentToken.type)
+      params = this.formalParamList()
+      this.eat(TOKEN_TYPE.RPAREN)
+    }
+
+    this.eat(TOKEN_TYPE.SEMI)
+    const block = this.block()
+    let result = new ProcedureDecl(id.value, params, block)
+    this.eat(TOKEN_TYPE.SEMI)
+    return result
+  }
+
   declarations () {
     let result = []
 
@@ -174,20 +193,7 @@ export default class Parser {
     }
 
     while (this.currentToken.type === TOKEN_TYPE.PROCEDURE) {
-      this.eat(this.currentToken.type)
-      const id = this.eat(TOKEN_TYPE.ID)
-
-      let params = null
-      if (this.currentToken.type === TOKEN_TYPE.LPAREN) {
-        this.eat(this.currentToken.type)
-        params = this.formalParamList()
-        this.eat(TOKEN_TYPE.RPAREN)
-      }
-
-      this.eat(TOKEN_TYPE.SEMI)
-      const block = this.block()
-      result = result.concat(new ProcedureDecl(id.value, params, block))
-      this.eat(TOKEN_TYPE.SEMI)
+      result.push(this.procedureDeclaration())
     }
 
     return result

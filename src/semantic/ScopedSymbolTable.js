@@ -1,5 +1,6 @@
 import { BuiltinTypeSymbol } from './Symbol'
-import { repeatChar } from '../utils';
+import { repeatChar } from '../utils'
+import { ERROR_CODE, SemanticError } from '../error'
 
 export default class ScopedSymbolTable {
   constructor (level, name, enclosingScope = null) {
@@ -20,9 +21,9 @@ export default class ScopedSymbolTable {
     this.insert(new BuiltinTypeSymbol('REAL'))
   }
 
-  insertVar (symbol) {
+  insertVar (symbol, token) {
     if (this.lookup(symbol.name, true)) {
-      throw new Error(`The variable ${symbol.name} in scope ${this.name} has been declared`)
+      throw new SemanticError(`${ERROR_CODE.DUPLICATE_ID} -> ${token.toString()}`)
     } else {
       return this.insert(symbol)
     }

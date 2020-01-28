@@ -1,36 +1,41 @@
 import { isWhitespace, isComment, isAlpha, isAlnum, isInteger } from '../utils'
-import { TOKEN_TYPE, RESERVED_KEYWORDS, SINGLE_PUNCTUATOR_MAP } from './constants'
+import { TOKEN_TYPE, reservedTokenToType, binaryPunctuatorTokenToType, singlePunctuatorTokenToType } from './constants'
 import Token from './Token'
-
-function memorized (type, value) {
-  const key = `${type.toString()}_${value}`
-  if (memorized.cache[key]) {
-    return memorized.cache[key]
-  } else {
-    const token = new Token(type, value)
-    memorized.cache[key] = token
-    return token
-  }
-}
-memorized.cache = {}
+import { ERROR_CODE, LexerError } from '../error'
 
 export default class Lexer {
   constructor (text) {
     this.text = text
     this.pos = 0
+    this.line = 1
+    this.column = 1
     this.currentChar = this.text[this.pos]
   }
 
   error () {
-    throw new Error('Invalid charactor')
+    throw new LexerError(`${ERROR_CODE.UNEXPECTED_CHAR} at ${this.line}:${this.column}`)
+  }
+
+  getPositionInfo () {
+    return {
+      pos: this.pos,
+      line: this.line,
+      column: this.column
+    }
   }
 
   advanceBy (n = 1) {
+    if (this.currentChar === '\n') {
+      this.line++
+      this.column = 0
+    }
+
     this.pos += n
     if (this.pos > this.text.length - 1) {
       this.currentChar = null
     } else {
       this.currentChar = this.text[this.pos]
+      this.column += n
     }
   }
 
@@ -77,8 +82,9 @@ export default class Lexer {
 
   id () {
     const id = this.advanceWhen(isAlnum).toUpperCase()
-    let keyword = RESERVED_KEYWORDS[id]
-    return memorized(keyword || TOKEN_TYPE.ID, id)
+    const keyword = TOKEN_TYPE[reservedTokenToType[id]]
+    const type = keyword || TOKEN_TYPE.ID
+    return new Token(type, id, this.positionInfo)
   }
 
   number () {
@@ -86,22 +92,18 @@ export default class Lexer {
     if (this.currentChar === '.') {
       this.advanceBy()
       result += '.' + this.advanceWhen(isInteger)
-      let number = parseFloat(result)
-      return memorized(TOKEN_TYPE.FLOAT_CONST, number)
+      const number = parseFloat(result)
+      return new Token(TOKEN_TYPE.FLOAT_CONST, number, this.positionInfo)
     } else {
-      let number = parseInt(result)
-      return memorized(TOKEN_TYPE.INTEGER_CONST, number)
+      const number = parseInt(result)
+      return new Token(TOKEN_TYPE.INTEGER_CONST, number, this.positionInfo)
     }
-  }
-
-  integer () {
-    let result = this.pluar(isInteger)
-    return parseInt(result)
   }
 
   getNextToken () {
     while (this.currentChar) {
       let char = this.currentChar
+      this.positionInfo = this.getPositionInfo()
       if (isWhitespace(char)) {
         this.whitespace()
         continue
@@ -120,21 +122,23 @@ export default class Lexer {
         return this.number()
       }
 
-      if (this.peekValid(':=')) {
+      let binaryPunctuator = char + this.peekBy()
+      let binaryType = TOKEN_TYPE[binaryPunctuatorTokenToType[binaryPunctuator]]
+      if (binaryType) {
         this.advanceBy(2)
-        return memorized(TOKEN_TYPE.ASSIGN, ':=')
+        return new Token(binaryType, binaryPunctuator, this.positionInfo)
       }
 
-      let type = SINGLE_PUNCTUATOR_MAP[char]
+      let type = TOKEN_TYPE[singlePunctuatorTokenToType[char]]
       if (type) {
         this.advanceBy()
-        return memorized(type, char)
+        return new Token(type, char, this.positionInfo)
       }
 
       this.error()
     }
 
-    return new Token(TOKEN_TYPE.EOF, null)
+    return new Token(TOKEN_TYPE.EOF, null, this.getPositionInfo())
   }
 
   output () {

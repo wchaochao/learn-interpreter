@@ -1,6 +1,7 @@
 import NodeVisitor from '../visitor'
 import ScopedSymbolTable from './ScopedSymbolTable'
 import { VarSymbol, ProcedureSymbol } from './Symbol'
+import { ERROR_CODE, SemanticError } from '../error'
 
 export default class SourceToSourceCompiler extends NodeVisitor {
   constructor (parser) {
@@ -10,8 +11,8 @@ export default class SourceToSourceCompiler extends NodeVisitor {
     this.output = ''
   }
 
-  error (name) {
-    throw new Error(`The variable ${name} does not declare`)
+  error (token) {
+    throw new SemanticError(`${ERROR_CODE.ID_NOT_DECLARE} -> ${token.toString()}`)
   }
 
   visit_Num (node) {
@@ -22,7 +23,7 @@ export default class SourceToSourceCompiler extends NodeVisitor {
     const name = node.value
     const symbol = this.currentScope.lookup(name)
     if (!symbol) {
-      this.error(name)
+      this.error(node.token)
     } else {
       return `<${name}${symbol.scope.level}:${symbol.type.name}>`
     }
@@ -64,14 +65,14 @@ export default class SourceToSourceCompiler extends NodeVisitor {
 
   visit_VarDecl (node) {
     const varSymbol = this.genVarSymbol(node)
-    this.currentScope.insertVar(varSymbol)
+    this.currentScope.insertVar(varSymbol, node.varNode.token)
     return `VAR ${varSymbol.name}${varSymbol.scope.level} : ${varSymbol.type.name};`
   }
 
   visit_ProcedureDecl (node) {
     const procName = node.name
     const procSymbol = new ProcedureSymbol(procName)
-    this.currentScope.insertVar(procSymbol)
+    this.currentScope.insertVar(procSymbol, `procedure ${procName}`)
     let result = `\nPROCEDURE ${procName}${procSymbol.scope.level}`
 
     const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, procName, this.currentScope)
@@ -83,7 +84,7 @@ export default class SourceToSourceCompiler extends NodeVisitor {
       let formalParams = []
       node.params.forEach(param => {
         const symbol = this.genVarSymbol(param)
-        this.currentScope.insertVar(symbol)
+        this.currentScope.insertVar(symbol, param.varNode.token)
         procSymbol.params.push(symbol)
         formalParams.push(`${symbol.name}${symbol.scope.level}: ${symbol.type.name}`)
       })

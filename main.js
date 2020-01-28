@@ -27,29 +27,38 @@ function main () {
 
   const dom = document.querySelector('.result')
 
+  function errorProcess (fn, code) {
+    try {
+      return fn(code)
+    } catch (e) {
+      console.error(e)
+      return e
+    }
+  }
+
   document.querySelector('.lexer').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.textContent = lexer(code)
+    dom.textContent = errorProcess(lexer, code)
   })
 
   document.querySelector('.parser').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.textContent = parser(code)
+    dom.textContent = errorProcess(parser, code)
   })
 
   document.querySelector('.semantic').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.textContent = semantic(code)
+    dom.textContent = errorProcess(semantic, code)
   })
 
   document.querySelector('.compiler').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.textContent = compiler(code)
+    dom.textContent = errorProcess(compiler, code)
   })
 
   document.querySelector('.interpreter').addEventListener('click', () => {
     const code = editor.getValue()
-    dom.textContent = interpreter(code)
+    dom.textContent = errorProcess(interpreter, code)
   })
 }
 

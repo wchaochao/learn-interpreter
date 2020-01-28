@@ -1,17 +1,25 @@
 import NodeVisitor from '../visitor'
 import { VarSymbol, ProcedureSymbol } from './Symbol'
 import ScopedSymbolTable from './ScopedSymbolTable'
+import { ERROR_CODE, SemanticError } from '../error'
 
 export default class Semantic extends NodeVisitor {
-  constructor (parser) {
+  constructor (parser, shouldLogScope = false) {
     super()
     this.parser = parser
     this.currentScope = null
+    this.shouldLogScope = shouldLogScope
     this.output = []
   }
 
-  error (name) {
-    throw new Error(`The variable ${name} does not declare`)
+  error (token) {
+    throw new SemanticError(`${ERROR_CODE.ID_NOT_DECLARE} -> ${token.toString()}`)
+  }
+
+  record (scope) {
+    if (this.shouldLogScope) {
+      this.output.push(scope.toString())
+    }
   }
 
   visit_Num (node) {}
@@ -20,7 +28,7 @@ export default class Semantic extends NodeVisitor {
     const name = node.value
     const symbol = this.currentScope.lookup(name)
     if (!symbol) {
-      this.error(name)
+      this.error(node.token)
     }
   }
 
@@ -50,13 +58,13 @@ export default class Semantic extends NodeVisitor {
 
   visit_VarDecl (node) {
     const varSymbol = this.genVarSymbol(node)
-    this.currentScope.insertVar(varSymbol)
+    this.currentScope.insertVar(varSymbol, node.varNode.token)
   }
 
   visit_ProcedureDecl (node) {
     const procName = node.name
     const procSymbol = new ProcedureSymbol(procName)
-    this.currentScope.insertVar(procSymbol)
+    this.currentScope.insertVar(procSymbol, `procedure ${procName}`)
 
     const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, procName, this.currentScope)
     this.currentScope = procedureScope
@@ -65,13 +73,13 @@ export default class Semantic extends NodeVisitor {
       procSymbol.params = []
       node.params.forEach(param => {
         const symbol = this.genVarSymbol(param)
-        this.currentScope.insertVar(symbol)
+        this.currentScope.insertVar(symbol, param.varNode.token)
         procSymbol.params.push(symbol)
       })
     }
 
     this.visit(node.block)
-    this.output.push(procedureScope.toString())
+    this.record(procedureScope)
     this.currentScope = this.currentScope.enclosingScope
   }
 
@@ -86,7 +94,7 @@ export default class Semantic extends NodeVisitor {
     this.currentScope = globalScope
 
     this.visit(node.block)
-    this.output.push(globalScope.toString())
+    this.record(globalScope)
     this.currentScope = this.currentScope.enclosingScope
   }
 
