@@ -48,6 +48,19 @@ export default class Semantic extends NodeVisitor {
     this.visit(node.left)
   }
 
+  visit_ProcedureCall (node) {
+    const symbol = this.currentScope.lookup(node.name)
+    if (!symbol) {
+      this.error(node.token)
+    } else {
+      if (node.params.length !== symbol.params.length) {
+        throw new SemanticError(`${ERROR_CODE.UNEXPECTED_ARGUMENT_COUNT} -> ${node.token}`)
+      } else {
+        node.params.forEach(param => this.visit(param))
+      }
+    }
+  }
+
   visit_Compound (node) {
     node.statements.forEach(statement => this.visit(statement))
   }
@@ -64,19 +77,16 @@ export default class Semantic extends NodeVisitor {
   visit_ProcedureDecl (node) {
     const procName = node.name
     const procSymbol = new ProcedureSymbol(procName)
-    this.currentScope.insertVar(procSymbol, `procedure ${procName}`)
+    this.currentScope.insertVar(procSymbol, node.token)
 
     const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, procName, this.currentScope)
     this.currentScope = procedureScope
 
-    if (node.params) {
-      procSymbol.params = []
-      node.params.forEach(param => {
-        const symbol = this.genVarSymbol(param)
-        this.currentScope.insertVar(symbol, param.varNode.token)
-        procSymbol.params.push(symbol)
-      })
-    }
+    node.params.forEach(param => {
+      const symbol = this.genVarSymbol(param)
+      this.currentScope.insertVar(symbol, param.varNode.token)
+      procSymbol.params.push(symbol)
+    })
 
     this.visit(node.block)
     this.record(procedureScope)

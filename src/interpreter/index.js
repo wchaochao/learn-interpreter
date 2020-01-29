@@ -50,6 +50,8 @@ export default class Interpreter extends NodeVisitor {
     this.GLOBAL_SCOPE[varName] = this.visit(node.right)
   }
 
+  visit_ProcedureCall () {}
+
   visit_Compound (node) {
     node.statements.forEach(statement => this.visit(statement))
   }

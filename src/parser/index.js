@@ -1,5 +1,5 @@
 import { TOKEN_TYPE, include } from '../lexer/constants'
-import { Num, Var, UnaryOp, BinOp, NoOp, Assign, Compound, Type, VarDecl, Block, Program, ProcedureDecl, Param } from './AST'
+import { Num, Var, UnaryOp, BinOp, NoOp, Assign, Compound, Type, VarDecl, Block, Program, ProcedureDecl, Param, ProcedureCall } from './AST'
 import { ParserError, ERROR_CODE } from '../error'
 
 export default class Parser {
@@ -87,6 +87,21 @@ export default class Parser {
     return new Assign(this.variable(), this.eat(TOKEN_TYPE.ASSIGN), this.expr())
   }
 
+  procedureCall () {
+    const token = this.eat(TOKEN_TYPE.ID)
+    this.eat(TOKEN_TYPE.LPAREN)
+    let params = []
+    if (this.currentToken.type !== TOKEN_TYPE.RPAREN) {
+      params.push(this.expr())
+      while (this.currentToken.type === TOKEN_TYPE.COMMA) {
+        this.eat(TOKEN_TYPE.COMMA)
+        params.push(this.expr())
+      }
+    }
+    this.eat(TOKEN_TYPE.RPAREN)
+    return new ProcedureCall(token, params)
+  }
+
   statement () {
     let type = this.currentToken.type
     if (type === TOKEN_TYPE.BEGIN) {
@@ -94,7 +109,11 @@ export default class Parser {
     }
 
     if (type === TOKEN_TYPE.ID) {
-      return this.assignment()
+      if (this.lexer.currentChar === '(') {
+        return this.procedureCall()
+      } else {
+        return this.assignment()
+      }
     }
 
     return this.empty()
@@ -170,7 +189,7 @@ export default class Parser {
     this.eat(TOKEN_TYPE.PROCEDURE)
     const id = this.eat(TOKEN_TYPE.ID)
 
-    let params = null
+    let params = []
     if (this.currentToken.type === TOKEN_TYPE.LPAREN) {
       this.eat(this.currentToken.type)
       params = this.formalParamList()
@@ -179,7 +198,7 @@ export default class Parser {
 
     this.eat(TOKEN_TYPE.SEMI)
     const block = this.block()
-    let result = new ProcedureDecl(id.value, params, block)
+    let result = new ProcedureDecl(id, params, block)
     this.eat(TOKEN_TYPE.SEMI)
     return result
   }

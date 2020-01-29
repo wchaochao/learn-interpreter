@@ -26,16 +26,13 @@ export class VarSymbol extends Symbol {
 }
 
 export class ProcedureSymbol extends Symbol {
-  constructor (name, params = null) {
+  constructor (name, params = []) {
     super(name)
     this.params = params
   }
 
   toString () {
-    let params = ''
-    if (this.params) {
-      params = this.params.map(param => `${param.name}:${param.type.name}`).join(', ')
-    }
+    let params = this.params.map(param => `${param.name}:${param.type.name}`).join(', ')
     return `<ProedureSymbol(name='${this.name}', params='${params}')>`
   }
 }

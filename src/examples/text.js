@@ -30,6 +30,7 @@ const text = `program Main;
 
 begin { Main }
   x := 1.2;
+  AlphaB(1 + 2, 3);
   begin
     y := 2.3;
   end;

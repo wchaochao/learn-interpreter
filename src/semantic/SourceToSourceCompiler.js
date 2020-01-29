@@ -45,6 +45,20 @@ export default class SourceToSourceCompiler extends NodeVisitor {
     return `${this.visit(node.left)} ${node.token.value} ${this.visit(node.right)};`
   }
 
+  visit_ProcedureCall (node) {
+    const symbol = this.currentScope.lookup(node.name)
+    if (!symbol) {
+      this.error(node.token)
+    } else {
+      if (node.params.length !== symbol.params.length) {
+        throw new SemanticError(`${ERROR_CODE.UNEXPECTED_ARGUMENT_COUNT} -> ${node.token}`)
+      } else {
+        let params = node.params.map(param => this.visit(param))
+        return `${node.name}(${params.join(', ')})`
+      }
+    }
+  }
+
   visit_Compound (node) {
     let result = '\nBEGIN'
     let arr = ['']
@@ -72,15 +86,14 @@ export default class SourceToSourceCompiler extends NodeVisitor {
   visit_ProcedureDecl (node) {
     const procName = node.name
     const procSymbol = new ProcedureSymbol(procName)
-    this.currentScope.insertVar(procSymbol, `procedure ${procName}`)
+    this.currentScope.insertVar(procSymbol, node.token)
     let result = `\nPROCEDURE ${procName}${procSymbol.scope.level}`
 
     const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, procName, this.currentScope)
     this.currentScope = procedureScope
 
-    if (node.params) {
+    if (node.params.length) {
       result += '('
-      procSymbol.params = []
       let formalParams = []
       node.params.forEach(param => {
         const symbol = this.genVarSymbol(param)

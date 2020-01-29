@@ -72,6 +72,19 @@ export class Assign extends AST {
   }
 }
 
+export class ProcedureCall extends AST {
+  constructor (token, params) {
+    super()
+    this.token = token
+    this.name = token.value
+    this.params = params
+  }
+
+  get [Symbol.toStringTag] () {
+    return 'ProcedureCall'
+  }
+}
+
 export class Compound extends AST {
   constructor (statements) {
     super()
@@ -120,9 +133,10 @@ export class Param extends AST {
 }
 
 export class ProcedureDecl extends AST {
-  constructor (name, params = null, block) {
+  constructor (token, params = [], block) {
     super()
-    this.name = name
+    this.token = token
+    this.name = token.value
     this.params = params
     this.block = block
   }
