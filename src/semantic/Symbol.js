@@ -26,9 +26,10 @@ export class VarSymbol extends Symbol {
 }
 
 export class ProcedureSymbol extends Symbol {
-  constructor (name, params = []) {
-    super(name)
+  constructor (node, params = []) {
+    super(node.name)
     this.params = params
+    this.node = node
   }
 
   toString () {

@@ -1,12 +1,12 @@
 import NodeVisitor from '../visitor'
-import ScopedSymbolTable from './ScopedSymbolTable'
+import ScopedSymbolTable, { SCOPE_TYPE } from './ScopedSymbolTable'
 import { VarSymbol, ProcedureSymbol } from './Symbol'
 import { ERROR_CODE, SemanticError } from '../error'
 
 export default class SourceToSourceCompiler extends NodeVisitor {
-  constructor (parser) {
+  constructor (tree) {
     super()
-    this.parser = parser
+    this.tree = tree
     this.currentScope = null
     this.output = ''
   }
@@ -85,11 +85,11 @@ export default class SourceToSourceCompiler extends NodeVisitor {
 
   visit_ProcedureDecl (node) {
     const procName = node.name
-    const procSymbol = new ProcedureSymbol(procName)
+    const procSymbol = new ProcedureSymbol(node)
     this.currentScope.insertVar(procSymbol, node.token)
     let result = `\nPROCEDURE ${procName}${procSymbol.scope.level}`
 
-    const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, procName, this.currentScope)
+    const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, SCOPE_TYPE.PROCEDURE, procName, this.currentScope)
     this.currentScope = procedureScope
 
     if (node.params.length) {
@@ -123,7 +123,7 @@ export default class SourceToSourceCompiler extends NodeVisitor {
 
   visit_Program (node) {
     let result = `PROGRAM ${node.name}0;`
-    const globalScope = new ScopedSymbolTable(1, 'global', this.currentScope)
+    const globalScope = new ScopedSymbolTable(1, SCOPE_TYPE.PROGRAM, node.name, this.currentScope)
     globalScope.initBuiltinType()
     this.currentScope = globalScope
 
@@ -134,7 +134,6 @@ export default class SourceToSourceCompiler extends NodeVisitor {
   }
 
   compile () {
-    let tree = this.parser.parse()
-    return this.visit(tree)
+    return this.visit(this.tree)
   }
 }

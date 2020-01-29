@@ -2,9 +2,15 @@ import { BuiltinTypeSymbol } from './Symbol'
 import { repeatChar } from '../utils'
 import { ERROR_CODE, SemanticError } from '../error'
 
+export const SCOPE_TYPE = {
+  PROGRAM: 'PROGRAM',
+  PROCEDURE: 'PROCEDURE'
+}
+
 export default class ScopedSymbolTable {
-  constructor (level, name, enclosingScope = null) {
+  constructor (level, type, name, enclosingScope = null) {
     this.level = level
+    this.type = type
     this.name = name
     this._symbols = {}
     this.enclosingScope = enclosingScope

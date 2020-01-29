@@ -5,6 +5,6 @@ import SourceToSourceCompiler from '../semantic/SourceToSourceCompiler'
 export default function compiler (text) {
   let lexer = new Lexer(text)
   let parser = new Parser(lexer)
-  let compiler = new SourceToSourceCompiler(parser)
+  let compiler = new SourceToSourceCompiler(parser.parse())
   return compiler.compile()
 }

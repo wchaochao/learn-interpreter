@@ -1,13 +1,23 @@
 import NodeVisitor from '../visitor/index'
 import { TOKEN_TYPE } from '../lexer/constants'
 import Semantic from '../semantic'
+import CallStack from './CallStack'
+import Context from './Context';
 
 export default class Interpreter extends NodeVisitor {
-  constructor (parser) {
+  constructor (tree, shouldLogStack) {
     super()
-    this.parser = parser
-    this.semantic = new Semantic()
-    this.GLOBAL_SCOPE = {}
+    this.tree = tree
+    this.scopes = new Semantic(tree).analyze()
+    this.callStack = new CallStack()
+    this.shouldLogStack = shouldLogStack
+    this.output = []
+  }
+
+  record () {
+    if (this.shouldLogStack) {
+      this.output.push(this.callStack.toString())
+    }
   }
 
   visit_Num (node) {
@@ -16,7 +26,8 @@ export default class Interpreter extends NodeVisitor {
 
   visit_Var (node) {
     let varName = node.value
-    return this.GLOBAL_SCOPE[varName]
+    const context = this.callStack.peek()
+    return context.get(varName)
   }
 
   visit_UnaryOp (node) {
@@ -47,16 +58,26 @@ export default class Interpreter extends NodeVisitor {
 
   visit_Assign (node) {
     let varName = node.left.value
-    this.GLOBAL_SCOPE[varName] = this.visit(node.right)
+    const context = this.callStack.peek()
+    context.set(varName, this.visit(node.right))
   }
 
-  visit_ProcedureCall () {}
+  visit_ProcedureCall (node) {
+    const scope = this.scopes[node.name]
+    const context = new Context(scope)
+    this.callStack.push(context)
+    const symbol = scope.lookup(node.name)
+    symbol.params.forEach((param, index) => {
+      context.set(param.name, this.visit(node.params[index]))
+    })
+    this.visit(symbol.node.block)
+    this.record()
+    this.callStack.pop()
+  }
 
   visit_Compound (node) {
     node.statements.forEach(statement => this.visit(statement))
   }
-
-  visit_Type () {}
 
   visit_VarDecl () {}
 
@@ -68,12 +89,15 @@ export default class Interpreter extends NodeVisitor {
   }
 
   visit_Program (node) {
+    const scope = this.scopes[node.name]
+    const context = new Context(scope)
+    this.callStack.push(context)
     this.visit(node.block)
+    this.record()
+    this.callStack.pop()
   }
 
   interprete () {
-    let tree = this.parser.parse()
-    this.semantic.visit(tree)
-    return this.visit(tree)
+    this.visit(this.tree)
   }
 }

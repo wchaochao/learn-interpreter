@@ -6,7 +6,7 @@ import Interpreter from '../interpreter/index'
 export default function interpreter (text) {
   let lexer = new Lexer(text)
   let parser = new Parser(lexer)
-  let interpreter = new Interpreter(parser)
+  let interpreter = new Interpreter(parser.parse(), true)
   interpreter.interprete()
-  return JSON.stringify(interpreter.GLOBAL_SCOPE, null, '|-')
+  return interpreter.output.join('\n\n')
 }

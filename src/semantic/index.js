@@ -1,13 +1,14 @@
 import NodeVisitor from '../visitor'
 import { VarSymbol, ProcedureSymbol } from './Symbol'
-import ScopedSymbolTable from './ScopedSymbolTable'
+import ScopedSymbolTable, { SCOPE_TYPE } from './ScopedSymbolTable'
 import { ERROR_CODE, SemanticError } from '../error'
 
 export default class Semantic extends NodeVisitor {
-  constructor (parser, shouldLogScope = false) {
+  constructor (tree, shouldLogScope = false) {
     super()
-    this.parser = parser
+    this.tree = tree
     this.currentScope = null
+    this.scopes = {}
     this.shouldLogScope = shouldLogScope
     this.output = []
   }
@@ -76,11 +77,12 @@ export default class Semantic extends NodeVisitor {
 
   visit_ProcedureDecl (node) {
     const procName = node.name
-    const procSymbol = new ProcedureSymbol(procName)
+    const procSymbol = new ProcedureSymbol(node)
     this.currentScope.insertVar(procSymbol, node.token)
 
-    const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, procName, this.currentScope)
+    const procedureScope = new ScopedSymbolTable(this.currentScope.level + 1, SCOPE_TYPE.PROCEDURE, procName, this.currentScope)
     this.currentScope = procedureScope
+    this.scopes[procName] = procedureScope
 
     node.params.forEach(param => {
       const symbol = this.genVarSymbol(param)
@@ -99,9 +101,10 @@ export default class Semantic extends NodeVisitor {
   }
 
   visit_Program (node) {
-    const globalScope = new ScopedSymbolTable(1, 'global', this.currentScope)
+    const globalScope = new ScopedSymbolTable(1, SCOPE_TYPE.PROGRAM, node.name, this.currentScope)
     globalScope.initBuiltinType()
     this.currentScope = globalScope
+    this.scopes[node.name] = globalScope
 
     this.visit(node.block)
     this.record(globalScope)
@@ -109,7 +112,7 @@ export default class Semantic extends NodeVisitor {
   }
 
   analyze () {
-    let tree = this.parser.parse()
-    this.visit(tree)
+    this.visit(this.tree)
+    return this.scopes
   }
 }
