@@ -35,6 +35,6 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "codemirror": "^5.50.2"
+    "codemirror": "^5.58.2"
   }
 }
